@@ -1,6 +1,6 @@
 # Blueplate
 
-Blueplate is a small cross‑platform TUI helper to scaffold a new project from one of your local templates.
+Blueplate is a small cross‑platform TUI helper to scaffold a new project from one of your local templates. It was tested on **Windows 10** (using *MinGW 15.1.0*) and **Linux**.
 
 ## Dependencies
 - C++23 compiler

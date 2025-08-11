@@ -75,7 +75,7 @@ int run_app(int argc, char **argv) {
         std::vector<std::string> names =
             fs::directory_iterator(s_TemplatePath)
             | std::views::transform([](fs::directory_entry const &entry) {
-                  return entry.path().filename();
+                  return entry.path().filename().string();
               })
             | std::ranges::to<std::vector<std::string>>();
 
