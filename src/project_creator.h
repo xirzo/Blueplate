@@ -12,8 +12,8 @@ namespace pc {
 std::expected<void, std::string> create_project(
     const std::string &project_name,
     const std::string &template_name,
-    const fs::path    &templates_directory,
-    const fs::path    &path = fs::current_path()
+    const fs::path    &templates_path,
+    const fs::path    &path
 );
 
 }  // namespace pc
