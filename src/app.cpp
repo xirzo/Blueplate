@@ -43,9 +43,12 @@ int run_app(int argc, char **argv) {
     });
 
     CLI::App *delete_config =
-        config->add_subcommand("delete", "Delete your existing config");
+        config->add_subcommand("remove", "remove your existing config");
 
-    // TODO: implement config commands
+    delete_config->callback([&]() {
+        fs::remove_all(s_ConfigPath);
+        std::cout << "Config removed at " << s_ConfigPath << std::endl;
+    });
 
     CLI::App *create = s_App.add_subcommand("create", "Create a new project");
 
