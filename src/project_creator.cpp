@@ -9,15 +9,10 @@ namespace pc {
 std::expected<void, std::string> create_project(
     const std::string &project_name,
     const std::string &template_name,
+    const fs::path    &templates_path,
     const fs::path    &path
 ) {
-    std::optional<fs::path> templates_directory = get_templates_directory();
-
-    if (!templates_directory) {
-        return std::unexpected("No templates directory found");
-    }
-
-    fs::path template_directory = *templates_directory / template_name;
+    fs::path template_directory = templates_path / template_name;
 
     if (!fs::exists(template_directory)
         || !fs::is_directory(template_directory)) {
