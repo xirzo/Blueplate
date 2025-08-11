@@ -34,7 +34,12 @@ int run_app(int argc, char **argv) {
         config->add_subcommand("create", "Create a sample config");
 
     create_config->callback([&]() {
+        std::expected<void, std::string> create_result =
+            create_sample_config(s_ConfigPath, s_TemplatePath);
 
+        if (!create_result) {
+            std::cerr << create_result.error() << std::endl;
+        }
     });
 
     CLI::App *delete_config =
@@ -72,8 +77,9 @@ int run_app(int argc, char **argv) {
             return;
         }
 
-        std::expected<void, std::string> create_result =
-            create_project(s_ProjectName, chosen_template);
+        std::expected<void, std::string> create_result = create_project(
+            s_ProjectName, chosen_template, s_TemplatePath, fs::current_path()
+        );
 
         if (!create_result) {
             std::cerr << create_result.error() << std::endl;

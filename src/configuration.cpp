@@ -1,6 +1,8 @@
 #include "configuration.h"
 
-#include <vector>
+#include <filesystem>
+#include <iostream>
+#include <fstream>
 
 namespace pc {
 
@@ -12,53 +14,109 @@ std::optional<fs::path> get_config_path() {
 #if defined(_WIN32)
     if (const char *appdata = std::getenv("APPDATA")) {
         config_path = fs::path(appdata) / APP_NAME;
+        return config_path;
     }
 #elif defined(__APPLE__)
     if (const char *home = std::getenv("HOME")) {
         config_path =
             fs::path(home) / "Library" / "Application Support" / APP_NAME;
+        return config_path;
     }
 #else
-    if (const char *home = std::getenv("HOME")) {
-        config_path = fs::path(home) / ".config" / APP_NAME;
-    }
-
-    if (!fs::exists(config_path)) {
-        if (const char *xdg_config = std::getenv("XDG_CONFIG_HOME")) {
-            config_path = fs::path(xdg_config) / APP_NAME;
-        }
-    }
-#endif
-
-    std::vector<fs::path> fallbacks = {
-        fs::current_path(),
-
-#if defined(_WIN32)
-        fs::path(
-            std::getenv("ProgramFiles") ? std::getenv("ProgramFiles")
-                                        : "C:\\Program Files"
-        ) / APP_NAME,
-#else
-        "/usr/local/share/" + APP_NAME,
-        "/usr/share/" + APP_NAME,
-#endif
-    };
-
-    if (fs::exists(config_path)) {
+    if (const char *xdg_config = std::getenv("XDG_CONFIG_HOME")) {
+        config_path = fs::path(xdg_config) / APP_NAME;
         return config_path;
     }
 
-    for (const auto &path : fallbacks) {
-        if (fs::exists(path)) {
-            return path;
-        }
+    if (const char *home = std::getenv("HOME")) {
+        config_path = fs::path(home) / ".config" / APP_NAME;
+        return config_path;
     }
+#endif
 
     return std::nullopt;
 }
 
-std::expected<void, std::string> create_sample_config() {
-    return {};
+void write_file(const fs::path &path, const std::string &content) {
+    std::ofstream file(path);
+
+    if (!file) {
+        throw fs::filesystem_error(
+            "Failed to create file: " + path.string(), std::error_code()
+        );
+    }
+
+    file << content;
+}
+
+std::expected<void, std::string> create_sample_config(
+    const fs::path &config_path,
+    const fs::path &template_path
+) {
+    if (fs::exists(config_path)) {
+        return std::unexpected(
+            "Config already exists: " + config_path.string()
+        );
+    }
+
+    try {
+        const fs::path project_path = template_path / "sample-cmake-cpp";
+        fs::create_directory(config_path);
+        fs::create_directory(template_path);
+        fs::create_directory(project_path);
+
+        fs::create_directory(project_path / "src");
+        fs::create_directory(project_path / "include");
+
+        write_file(
+            project_path / "CMakeLists.txt",
+            R"(cmake_minimum_required(VERSION 3.15)
+project({{PROJECT_NAME}} VERSION 0.1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include_directories(include)
+
+add_executable(${PROJECT_NAME} 
+    src/main.cpp
+)
+
+# Install target
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+)"
+        );
+
+        write_file(project_path / "src" / "main.cpp", R"(#include <iostream>
+#include "{{PROJECT_NAME}}.h"
+
+int main() {
+    std::cout << "Hello from {{PROJECT_NAME}}!" << std::endl;
+    example_function();
+    return 0;
+}
+)");
+
+        write_file(
+            project_path / "include" / "{{PROJECT_NAME}}.h", R"(#pragma once
+
+#include <iostream>
+
+inline void example_function() {
+    std::cout << "This is an example function from {{PROJECT_NAME}}" << std::endl;
+}
+)"
+        );
+
+        return {};
+    } catch (const fs::filesystem_error &e) {
+        try {
+            if (fs::exists(config_path)) {
+                fs::remove_all(config_path);
+            }
+        } catch (...) {}
+        return std::unexpected(std::string("Filesystem error: ") + e.what());
+    }
 }
 
 }  // namespace pc

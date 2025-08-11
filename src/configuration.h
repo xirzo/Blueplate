@@ -12,6 +12,7 @@ namespace pc {
 std::optional<fs::path> get_config_path();
 
 std::expected<void, std::string> create_sample_config(
+    const fs::path &config_path,
     const fs::path &template_path
 );
 
