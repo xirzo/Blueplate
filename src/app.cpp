@@ -4,6 +4,7 @@
 
 #include "CLI11.hpp"
 #include "project_creator.h"
+#include "configuration.h"
 #include "ui.h"
 
 namespace fs = std::filesystem;
@@ -12,24 +13,56 @@ namespace pc {
 
 static CLI::App    s_App{ "CLI tool for fast creating of new projects" };
 static std::string s_ProjectName{};
+static fs::path    s_ConfigPath{};
+static fs::path    s_TemplatePath{};
 
 int run_app(int argc, char **argv) {
     argv = s_App.ensure_utf8(argv);
+
+    std::optional<fs::path> config_path = get_config_path();
+
+    if (!config_path) {
+        std::cerr << "Could not find config directory" << std::endl;
+    } else {
+        s_ConfigPath = config_path.value();
+        s_TemplatePath = s_ConfigPath / "templates";
+    }
+
+    CLI::App *config = s_App.add_subcommand("config", "Interact with config");
+
+    CLI::App *create_config =
+        config->add_subcommand("create", "Create a sample config");
+
+    create_config->callback([&]() {
+        std::expected<void, std::string> create_result =
+            create_sample_config(s_ConfigPath, s_TemplatePath);
+
+        if (!create_result) {
+            std::cerr << create_result.error() << std::endl;
+        }
+    });
+
+    CLI::App *delete_config =
+        config->add_subcommand("remove", "remove your existing config");
+
+    delete_config->callback([&]() {
+        fs::remove_all(s_ConfigPath);
+        std::cout << "Config removed at " << s_ConfigPath << std::endl;
+    });
 
     CLI::App *create = s_App.add_subcommand("create", "Create a new project");
 
     create->add_option("name", s_ProjectName, "Project name")->required();
 
     create->callback([&]() {
-        std::optional<fs::path> template_path = get_templates_directory();
-
-        if (!template_path) {
-            std::cerr << "Could not find template directory" << std::endl;
+        if (s_TemplatePath.empty()) {
+            std::cerr << "Could not find template directory, cannot proceed"
+                      << std::endl;
             return;
         }
 
         std::vector<std::string> names =
-            fs::directory_iterator(*template_path)
+            fs::directory_iterator(s_TemplatePath)
             | std::views::transform([](fs::directory_entry const &entry) {
                   return entry.path().filename();
               })
@@ -47,8 +80,9 @@ int run_app(int argc, char **argv) {
             return;
         }
 
-        std::expected<void, std::string> create_result =
-            create_project(s_ProjectName, chosen_template);
+        std::expected<void, std::string> create_result = create_project(
+            s_ProjectName, chosen_template, s_TemplatePath, fs::current_path()
+        );
 
         if (!create_result) {
             std::cerr << create_result.error() << std::endl;
