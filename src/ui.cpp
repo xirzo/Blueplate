@@ -41,14 +41,6 @@ std::string run_selector(
                 (selected - 1 + (int)options.size()) % (int)options.size();
             return true;
         }
-        if (event == Event::Character('q') || event == Event::Escape) {
-            cancelled = true;
-            return true;
-        }
-        if (event == Event::Return) {
-            confirmed = true;
-            return true;
-        }
         return false;
     });
 
@@ -60,6 +52,16 @@ std::string run_selector(
             return true;
         }
         if (confirmed) {
+            screen.ExitLoopClosure()();
+            return true;
+        }
+
+        if (event == Event::Character('q') || event == Event::Escape) {
+            cancelled = true;
+            screen.ExitLoopClosure()();
+            return true;
+        }
+        if (event == Event::Return) {
             screen.ExitLoopClosure()();
             return true;
         }
