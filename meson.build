@@ -1,5 +1,5 @@
 project(
-  'project-creator',
+  'blueplate',
   'cpp',
   version: '0.0.1',
   default_options: [
@@ -22,7 +22,7 @@ srcs = files(
 )
 
 executable(
-  'creator',
+  'blueplate',
   srcs,
   include_directories: [
     include_directories('src'),
