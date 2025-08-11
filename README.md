@@ -54,11 +54,57 @@ Now run:
 ./build/blueplate create test-app
 ```
 
-## Controls
+## Template Variables
 
-Key | Action
---- | ------
-Up / k | Up
-Down / j | Down
-Enter | Confirm
-q / Esc | Cancel
+Blueplate supports template variables in file contents and filenames. Variables use the `${variable_name}` syntax and are automatically replaced when creating a new project.
+
+- `${pc_project_name}` - The name of the project provided in the command line
+
+### Using Variables in Templates
+
+You can use variables in:
+
+1. **Files** - Any occurrence of `${variable_name}` will be replaced with its value
+2. **File names** - Files with names like `${pc_project_name}.h` will be renamed to match your project name
+3. **Directory names** - Directories with variables in their names will also be renamed
+
+### Example Template with Variables
+
+Here's an example of a CMake C++ template using variables:
+
+```
+sample-cmake-cpp/
+├── CMakeLists.txt         # Contains: project(${pc_project_name} VERSION 0.0.1)
+├── include/
+│   └── ${pc_project_name}.h  # Will be renamed to your project name
+└── src/
+    └── main.cpp           # Contains: #include "${pc_project_name}.h"
+```
+
+When you create a project with:
+```bash
+./build/blueplate create awesome-project
+```
+
+The result will be:
+```
+awesome-project/
+├── CMakeLists.txt         # Contains: project(awesome-project VERSION 0.0.1)
+├── include/
+│   └── awesome-project.h  # Renamed file
+└── src/
+    └── main.cpp           # Contains: #include "awesome-project.h"
+```
+
+
+## Creating a sample config
+
+Use these commands to manage your configuration:
+
+```bash
+# Create a sample configuration with templates
+./build/blueplate config create
+
+# Remove existing configuration
+./build/blueplate config remove
+```
