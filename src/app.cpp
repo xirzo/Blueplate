@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "CLI11.hpp"
+#include "key_inserter.h"
 #include "project_creator.h"
 #include "configuration.h"
 #include "ui.h"
@@ -41,6 +42,9 @@ int run_app(int argc, char **argv) {
         if (!create_result) {
             std::cerr << create_result.error() << std::endl;
         }
+
+        std::cout << "Succesfully created a sample config at " << s_ConfigPath
+                  << std::endl;
     });
 
     CLI::App *delete_config =
@@ -95,6 +99,15 @@ int run_app(int argc, char **argv) {
         if (!create_result) {
             std::cerr << create_result.error() << std::endl;
             return;
+        }
+
+        set_key("pc_project_name", s_ProjectName);
+
+        auto replace_result =
+            replace_directory_keys(fs::current_path() / s_ProjectName);
+
+        if (!replace_result) {
+            std::cerr << replace_result.error() << std::endl;
         }
     });
 

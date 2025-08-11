@@ -18,6 +18,7 @@ srcs = files(
   'bin/main.cpp',
   'src/app.cpp',
   'src/configuration.cpp',
+  'src/key_inserter.cpp',
   'src/project_creator.cpp',
   'src/ui.cpp',
 )

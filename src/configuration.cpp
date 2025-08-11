@@ -70,8 +70,8 @@ std::expected<void, std::string> create_sample_config(
 
         write_file(
             project_path / "CMakeLists.txt",
-            R"(cmake_minimum_required(VERSION 3.15)
-project({{PROJECT_NAME}} VERSION 0.1.0 LANGUAGES CXX)
+            R"(cmake_minimum_required(VERSION 3.24.1)
+project(${pc_project_name} VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -81,29 +81,26 @@ include_directories(include)
 add_executable(${PROJECT_NAME} 
     src/main.cpp
 )
-
-# Install target
-install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 )"
         );
 
         write_file(project_path / "src" / "main.cpp", R"(#include <iostream>
-#include "{{PROJECT_NAME}}.h"
+#include "${pc_project_name}.h"
 
 int main() {
-    std::cout << "Hello from {{PROJECT_NAME}}!" << std::endl;
+    std::cout << "Hello from ${pc_project_name}!" << std::endl;
     example_function();
     return 0;
 }
 )");
 
         write_file(
-            project_path / "include" / "{{PROJECT_NAME}}.h", R"(#pragma once
+            project_path / "include" / "${pc_project_name}.h", R"(#pragma once
 
 #include <iostream>
 
 inline void example_function() {
-    std::cout << "This is an example function from {{PROJECT_NAME}}" << std::endl;
+    std::cout << "This is an example function from ${pc_project_name}" << std::endl;
 }
 )"
         );
