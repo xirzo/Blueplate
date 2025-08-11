@@ -2,13 +2,14 @@
 
 #include "CLI11.hpp"
 #include "project_creator.h"
+#include "ui.h"
 
 namespace pc {
 
 static CLI::App    s_App{ "CLI tool for fast creating of new projects" };
-static std::string s_ProjectName{ 0 };
+static std::string s_ProjectName{};
 
-int init_app(int argc, char **argv) {
+int run_app(int argc, char **argv) {
     argv = s_App.ensure_utf8(argv);
 
     CLI::App *create = s_App.add_subcommand("create", "Create a new project");
@@ -16,7 +17,18 @@ int init_app(int argc, char **argv) {
     create->add_option("name", s_ProjectName, "Project name")->required();
 
     create->callback([&]() {
-        create_project(s_ProjectName);
+        std::string chosen_template;
+
+        chosen_template = run_selector(
+            { "C++ Meson", "C Meson", "C++ CMake", "C CMake" },
+            "Select a project template"
+        );
+
+        if (chosen_template.empty()) {
+            return;
+        }
+
+        create_project(s_ProjectName, chosen_template);
     });
 
     try {

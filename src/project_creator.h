@@ -5,7 +5,10 @@
 
 namespace pc {
 
-void create_project(const std::string &project_name);
+void create_project(
+    const std::string &project_name,
+    const std::string &template_name
+);
 
 }
 
