@@ -20,7 +20,7 @@ int run_app(int argc, char **argv) {
         std::string chosen_template;
 
         chosen_template = run_selector(
-            { "C++ Meson", "C Meson", "C++ CMake", "C CMake" },
+            { "C++ Meson", "C Meson", "C++ CMake", "C CMake", "test-project" },
             "Select a project template"
         );
 
@@ -28,7 +28,12 @@ int run_app(int argc, char **argv) {
             return;
         }
 
-        create_project(s_ProjectName, chosen_template);
+        std::expected<void, std::string> create_result =
+            create_project(s_ProjectName, chosen_template);
+
+        if (!create_result) {
+            std::cerr << create_result.error() << std::endl;
+        }
     });
 
     try {
