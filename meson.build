@@ -1,7 +1,7 @@
 project(
   'blueplate',
   'cpp',
-  version: '0.0.1',
+  version: '0.0.2',
   default_options: [
     'default_library=static',
     'cpp_std=c++23',
@@ -9,10 +9,15 @@ project(
   ],
 )
 
-cc = meson.get_compiler('cpp')
+cmake = import('cmake')
 
-ftxui_dep = dependency('ftxui', required: true)
-m_dep = cc.find_library('m', required: false)
+ftxui_proj = cmake.subproject('ftxui')
+ftxui_screen = ftxui_proj.dependency('screen')
+ftxui_dom = ftxui_proj.dependency('dom')
+ftxui_component = ftxui_proj.dependency('component')
+
+cli11_proj = subproject('cli11')
+cli11_dep = cli11_proj.get_variable('CLI11_dep')
 
 srcs = files(
   'bin/main.cpp',
@@ -30,8 +35,10 @@ executable(
     include_directories('src'),
   ],
   dependencies: [
-    ftxui_dep,
-    m_dep,
+    ftxui_screen,
+    ftxui_dom,
+    ftxui_component,
+    cli11_dep,
   ],
   install: true,
 )

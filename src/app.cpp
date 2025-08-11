@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <ranges>
 
-#include "CLI11.hpp"
+#include <CLI/CLI.hpp>
 #include "key_inserter.h"
 #include "project_creator.h"
 #include "configuration.h"
