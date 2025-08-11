@@ -89,7 +89,7 @@ int run_app(int argc, char **argv) {
         }
 
         std::expected<void, std::string> create_result = create_project(
-            s_ProjectName, chosen_template, s_TemplatePath, fs::current_path()
+            s_ProjectName, s_ChosenTemplate, s_TemplatePath, fs::current_path()
         );
 
         if (!create_result) {
