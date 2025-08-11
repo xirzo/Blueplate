@@ -4,6 +4,7 @@
 
 #include "CLI11.hpp"
 #include "project_creator.h"
+#include "configuration.h"
 #include "ui.h"
 
 namespace fs = std::filesystem;
@@ -15,6 +16,13 @@ static std::string s_ProjectName{};
 
 int run_app(int argc, char **argv) {
     argv = s_App.ensure_utf8(argv);
+
+    CLI::App *config = s_App.add_subcommand("config", "Interact with config");
+
+    config->add_subcommand("create", "Create a new config");
+    config->add_subcommand("delete", "Delete your existing config");
+
+    // TODO: implement config commands
 
     CLI::App *create = s_App.add_subcommand("create", "Create a new project");
 
