@@ -62,8 +62,8 @@ int run_app(int argc, char **argv) {
     create->add_option("name", s_ProjectName, "Project name")->required();
 
     create->callback([&]() {
-        if (s_TemplatePath.empty()) {
-            std::cerr << "Could not find template directory, cannot proceed"
+        if (!fs::exists(s_TemplatePath)) {
+            std::cerr << "Templates config directory does not exist"
                       << std::endl;
             return;
         }
