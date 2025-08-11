@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 namespace pc {
 
-std::optional<fs::path> get_templates_directory();
+std::optional<fs::path> get_config_path();
 
 std::expected<void, std::string> create_sample_config(
     const fs::path &template_path

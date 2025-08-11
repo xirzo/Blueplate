@@ -57,16 +57,6 @@ std::optional<fs::path> get_config_path() {
     return std::nullopt;
 }
 
-std::optional<fs::path> get_templates_directory() {
-    std::optional<fs::path> config_path = get_config_path();
-
-    if (!config_path) {
-        return std::nullopt;
-    }
-
-    return *config_path / "templates";
-}
-
 std::expected<void, std::string> create_sample_config() {
     return {};
 }
