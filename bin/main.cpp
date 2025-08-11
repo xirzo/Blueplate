@@ -7,6 +7,8 @@
  *
  * TODO: --force option for config create
  * TODO: --force option for create
+ *
+ * TODO: create commands to add keys and save them into config
  */
 
 int main(int argc, char **argv) {
