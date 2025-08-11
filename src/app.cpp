@@ -13,6 +13,7 @@ namespace pc {
 
 static CLI::App    s_App{ "CLI tool for fast creating of new projects" };
 static std::string s_ProjectName{};
+static std::string s_ChosenTemplate{};
 static fs::path    s_ConfigPath{};
 static fs::path    s_TemplatePath{};
 
@@ -52,6 +53,12 @@ int run_app(int argc, char **argv) {
 
     CLI::App *create = s_App.add_subcommand("create", "Create a new project");
 
+    create->add_option(
+        "-t,--template",
+        s_ChosenTemplate,
+        "Template name (allows non-interactive use)"
+    );
+
     create->add_option("name", s_ProjectName, "Project name")->required();
 
     create->callback([&]() {
@@ -73,10 +80,11 @@ int run_app(int argc, char **argv) {
                       << std::endl;
         }
 
-        std::string chosen_template =
-            run_selector(names, "Select a project template");
+        if (s_ChosenTemplate.empty()) {
+            s_ChosenTemplate = run_selector(names, "Select a project template");
+        }
 
-        if (chosen_template.empty()) {
+        if (s_ChosenTemplate.empty()) {
             return;
         }
 
