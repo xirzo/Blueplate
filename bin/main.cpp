@@ -9,6 +9,9 @@
  * TODO: --force option for create
  *
  * TODO: create commands to add keys and save them into config
+ *
+ * TODO: remove ability to create names with "-" when using c++ or c
+ *
  */
 
 int main(int argc, char **argv) {
