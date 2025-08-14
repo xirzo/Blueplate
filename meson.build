@@ -16,8 +16,8 @@ ftxui_screen = ftxui_proj.dependency('screen')
 ftxui_dom = ftxui_proj.dependency('dom')
 ftxui_component = ftxui_proj.dependency('component')
 
-cli11_proj = subproject('cli11')
-cli11_dep = cli11_proj.get_variable('CLI11_dep')
+cli11_dep = dependency('CLI11', fallback: ['cli11', 'cli11_dep'])
+tomlcpp_dep = dependency('tomlplusplus', fallback: ['tomlplusplus', 'tomlplusplus_dep'])
 
 srcs = files(
   'bin/main.cpp',
@@ -39,6 +39,7 @@ executable(
     ftxui_dom,
     ftxui_component,
     cli11_dep,
+    tomlcpp_dep,
   ],
   install: true,
 )
