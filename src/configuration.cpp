@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <toml++/toml.hpp>
 
 namespace pc {
 
@@ -61,7 +62,20 @@ std::expected<void, std::string> create_sample_config(
 
     try {
         const fs::path project_path = template_path / "sample-cmake-cpp";
+
         fs::create_directory(config_path);
+
+        toml::table config_table = toml::table{
+            { "custom_variables",
+              toml::array{ toml::array{ "pc_version", "1.0.1" },
+                           toml::array{ "pc_author", "xirzo" } } }
+        };
+
+        std::ostringstream oss;
+        oss << toml::default_formatter{ config_table };
+
+        write_file(config_path / CONFIG_FILE_NAME, oss.str());
+
         fs::create_directory(template_path);
         fs::create_directory(project_path);
 

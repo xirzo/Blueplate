@@ -41,6 +41,7 @@ int run_app(int argc, char **argv) {
 
         if (!create_result) {
             std::cerr << create_result.error() << std::endl;
+            return;
         }
 
         std::cout << "Succesfully created a sample config at " << s_ConfigPath
