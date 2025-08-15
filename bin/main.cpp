@@ -9,6 +9,9 @@
  * TODO: add pc_current_time/year/month/day/some env variable
  *
  * TODO: maybe add numbers evaluation/expressions
+ *
+ * TODO: few steps project cretion (initting git repository)
+ * creating .gitignore (can be handled in few windows)
  */
 
 int main(int argc, char **argv) {

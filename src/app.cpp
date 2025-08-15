@@ -1,5 +1,6 @@
 #include "app.h"
 #include <algorithm>
+#include <chrono>
 #include <filesystem>
 #include <ranges>
 
@@ -116,6 +117,21 @@ int run_app(int argc, char **argv) {
         });
 
         s_Keys["pc_project_name"] = s_ProjectName;
+
+        std::chrono::system_clock::time_point now =
+            std::chrono::system_clock::now();
+
+        std::chrono::year_month_day ymd = std::chrono::year_month_day{
+            std::chrono::floor<std::chrono::days>(now)
+        };
+
+        auto now_seconds = std::chrono::floor<std::chrono::seconds>(now);
+
+        s_Keys["pc_time_now"] =
+            std::format("{:%Y-%m-%d %H:%M:%S}", now_seconds);
+        s_Keys["pc_time_year"] = std::format("{:%Y}", now);
+        s_Keys["pc_time_month"] = std::format("{:%m}", now);
+        s_Keys["pc_time_day"] = std::format("{:%d}", now);
 
         auto replace_result =
             replace_directory_keys(fs::current_path() / s_ProjectName, s_Keys);

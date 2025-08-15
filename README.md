@@ -65,15 +65,18 @@ Examples:
 |---------------|---------|
 | `include/${pc_project_name}.h` | `include/my-awesome-app.h` |
 | `src/${pc_project_name}/main.cpp` | `src/my-awesome-app/main.cpp` |
-| Content line: `#include "${pc_project_name}.h"` | `#include "my-awesome-app.h"` |
+| `#include "${pc_project_name}.h"` | `#include "my-awesome-app.h"` |
 
 ---
 
 ### Built‑In Variables
-
 | Name | Meaning |
 |------|---------|
 | `pc_project_name` | The name you pass to `blueplate create <name>` |
+| `pc_time_now`  | The current date and time formatted as `YYYY-MM-DD HH:MM:SS`|
+| `pc_time_year` | The current year formatted as `YYYY`|
+| `pc_time_month` | The current month formatted as `MM`|
+| `pc_time_day`  | The current day (of the month) formatted as `DD`|
 
 
 ### Custom Variables
