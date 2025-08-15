@@ -1,7 +1,7 @@
 project(
   'blueplate',
   'cpp',
-  version: '0.0.2',
+  version: '0.0.3',
   default_options: [
     'default_library=static',
     'cpp_std=c++23',
