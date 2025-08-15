@@ -6,12 +6,8 @@
 
 namespace pc {
 
-void set_key(const std::string key_name, const std::string value) {
-    s_Keys[key_name] = value;
-}
-
-std::string replace_keys_in_string(std::string str) {
-    for (const auto &[key, value] : s_Keys) {
+std::string replace_keys_in_string(std::string str, const Keys &keys) {
+    for (const auto &[key, value] : keys) {
         std::string placeholder = "${" + key + "}";
 
         std::string::size_type pos = 0;
@@ -24,9 +20,10 @@ std::string replace_keys_in_string(std::string str) {
     return str;
 }
 
-std::expected<void, std::string> replace_file_keys(fs::path file_path) {
+std::expected<void, std::string>
+replace_file_keys(fs::path file_path, const Keys &keys) {
     std::string original_filename = file_path.filename().string();
-    std::string new_filename = replace_keys_in_string(original_filename);
+    std::string new_filename = replace_keys_in_string(original_filename, keys);
 
     fs::path new_path = file_path.parent_path() / new_filename;
     fs::path temp_path = file_path.parent_path() / (new_filename + ".tmp");
@@ -55,7 +52,7 @@ std::expected<void, std::string> replace_file_keys(fs::path file_path) {
 
     std::string line;
     while (std::getline(input, line)) {
-        line = replace_keys_in_string(line);
+        line = replace_keys_in_string(line, keys);
         output << line << '\n';
     }
 
@@ -92,7 +89,7 @@ std::expected<void, std::string> replace_file_keys(fs::path file_path) {
 }
 
 std::expected<void, std::string>
-replace_directory_keys(fs::path dir_path, bool recursive) {
+replace_directory_keys(fs::path dir_path, const Keys &keys, bool recursive) {
     if (!fs::exists(dir_path) || !fs::is_directory(dir_path)) {
         return std::unexpected("Invalid directory path: " + dir_path.string());
     }
@@ -105,14 +102,14 @@ replace_directory_keys(fs::path dir_path, bool recursive) {
 
     for (const auto &path : paths_to_process) {
         if (fs::is_directory(path) && recursive) {
-            auto result = replace_directory_keys(path, true);
+            auto result = replace_directory_keys(path, keys, true);
 
             if (!result) {
                 return result;
             }
 
             std::string dir_name = path.filename().string();
-            std::string new_dir_name = replace_keys_in_string(dir_name);
+            std::string new_dir_name = replace_keys_in_string(dir_name, keys);
 
             if (dir_name != new_dir_name) {
                 fs::path new_path = path.parent_path() / new_dir_name;
@@ -126,7 +123,7 @@ replace_directory_keys(fs::path dir_path, bool recursive) {
                 }
             }
         } else if (fs::is_regular_file(path)) {
-            auto result = replace_file_keys(path);
+            auto result = replace_file_keys(path, keys);
 
             if (!result) {
                 return result;
