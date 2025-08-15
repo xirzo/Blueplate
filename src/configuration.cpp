@@ -126,10 +126,11 @@ std::expected<void, std::string> create_sample_config() {
 
         toml::table config_table{
             { "variables",
-              toml::table{
-                  { "custom",
-                    toml::array{ toml::array{ "pc_version", "1.0.1" },
-                                 toml::array{ "pc_author", "xirzo" } } } } }
+              toml::table{ { "custom",
+                             toml::array{ toml::array{ "pc_version", "0.0.1" },
+                                          toml::array{ "pc_author", "xirzo" },
+                                          toml::array{ "pc_cmake_version",
+                                                       "3.24.1" } } } } }
         };
 
         std::ostringstream oss;
@@ -145,8 +146,8 @@ std::expected<void, std::string> create_sample_config() {
 
         write_file(
             project_path / "CMakeLists.txt",
-            R"(cmake_minimum_required(VERSION 3.24.1)
-project(${pc_project_name} VERSION 0.0.1 LANGUAGES CXX)
+            R"(cmake_minimum_required(VERSION ${pc_cmake_version})
+project(${pc_project_name} VERSION ${pc_version} LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -161,6 +162,8 @@ add_executable(${PROJECT_NAME}
 
         write_file(project_path / "src" / "main.cpp", R"(#include <iostream>
 #include "${pc_project_name}.h"
+
+// Author of this project is ${pc_author}
 
 int main() {
     std::cout << "Hello from ${pc_project_name}!" << std::endl;
