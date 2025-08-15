@@ -14,6 +14,9 @@ namespace pc {
 struct KeyValue {
     std::string key;
     std::string value;
+
+    KeyValue(std::string key, std::string value)
+        : key(std::move(key)), value(std::move(value)) {}
 };
 
 constexpr char APP_NAME[] = "blueplate";

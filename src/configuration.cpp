@@ -3,9 +3,26 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
-#include <toml++/toml.hpp>
+#include <optional>
+#include <string>
+#define TOML_EXCEPTIONS 0
+#define TOML_IMPLEMENTATION
+#include <toml++/toml.h>
+#include <vector>
 
 namespace pc {
+
+static void write_file(const fs::path &path, const std::string &content) {
+    std::ofstream file(path);
+
+    if (!file) {
+        throw fs::filesystem_error(
+            "Failed to create file: " + path.string(), std::error_code()
+        );
+    }
+
+    file << content;
+}
 
 std::optional<fs::path> get_config_path() {
     fs::path config_path;
@@ -36,16 +53,56 @@ std::optional<fs::path> get_config_path() {
     return std::nullopt;
 }
 
-void write_file(const fs::path &path, const std::string &content) {
-    std::ofstream file(path);
+std::optional<std::vector<KeyValue>> get_config_variables() {
+    auto config_path = get_config_path();
 
-    if (!file) {
-        throw fs::filesystem_error(
-            "Failed to create file: " + path.string(), std::error_code()
-        );
+    if (!config_path) {
+        return std::nullopt;
     }
 
-    file << content;
+    fs::path configuration_path = *config_path / CONFIG_FILE_NAME;
+
+    toml::parse_result parsed;
+
+    try {
+        parsed = toml::parse_file(configuration_path.string());
+    } catch (const toml::parse_error &) {
+        return std::nullopt;
+    }
+    if (!parsed) {
+        return std::nullopt;
+    }
+
+    toml::table &root = parsed.table();
+
+    toml::node_view vars_view = root["variables"]["custom"];
+
+    if (!vars_view || !vars_view.is_array()) {
+        return std::nullopt;
+    }
+
+    const toml::array    &arr = *vars_view.as_array();
+    std::vector<KeyValue> result;
+    result.reserve(arr.size());
+
+    for (const toml::node &node : arr) {
+        const toml::array *key_value = node.as_array();
+
+        if (!key_value || key_value->size() != 2) {
+            continue;
+        }
+
+        auto key = (*key_value)[0].as_string();
+        auto value = (*key_value)[1].as_string();
+
+        if (!key || !value) {
+            continue;
+        }
+
+        result.push_back({ key->get(), value->get() });
+    }
+
+    return result;
 }
 
 std::expected<void, std::string> create_sample_config() {
@@ -67,10 +124,12 @@ std::expected<void, std::string> create_sample_config() {
 
         fs::create_directory(*config_path);
 
-        toml::table config_table = toml::table{
-            { "custom_variables",
-              toml::array{ toml::array{ "pc_version", "1.0.1" },
-                           toml::array{ "pc_author", "xirzo" } } }
+        toml::table config_table{
+            { "variables",
+              toml::table{
+                  { "custom",
+                    toml::array{ toml::array{ "pc_version", "1.0.1" },
+                                 toml::array{ "pc_author", "xirzo" } } } } }
         };
 
         std::ostringstream oss;

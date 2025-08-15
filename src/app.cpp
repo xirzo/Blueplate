@@ -1,4 +1,5 @@
 #include "app.h"
+#include <algorithm>
 #include <filesystem>
 #include <ranges>
 
@@ -101,6 +102,18 @@ int run_app(int argc, char **argv) {
             std::cerr << create_result.error() << std::endl;
             return;
         }
+
+        auto config_variables = get_config_variables();
+
+        if (!config_variables) {
+            std::cerr << "Failed to get config variables" << std::endl;
+        }
+
+        std::ranges::for_each(*config_variables, [](KeyValue kv) {
+            auto &[key, value] = kv;
+
+            s_Keys[key] = value;
+        });
 
         s_Keys["pc_project_name"] = s_ProjectName;
 
