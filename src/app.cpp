@@ -17,6 +17,7 @@ static std::string s_ProjectName{};
 static std::string s_ChosenTemplate{};
 static fs::path    s_ConfigPath{};
 static fs::path    s_TemplatePath{};
+static Keys        s_Keys{};
 
 int run_app(int argc, char **argv) {
     argv = s_App.ensure_utf8(argv);
@@ -36,8 +37,7 @@ int run_app(int argc, char **argv) {
         config->add_subcommand("create", "Create a sample config");
 
     create_config->callback([&]() {
-        std::expected<void, std::string> create_result =
-            create_sample_config(s_ConfigPath, s_TemplatePath);
+        std::expected<void, std::string> create_result = create_sample_config();
 
         if (!create_result) {
             std::cerr << create_result.error() << std::endl;
@@ -102,10 +102,10 @@ int run_app(int argc, char **argv) {
             return;
         }
 
-        set_key("pc_project_name", s_ProjectName);
+        s_Keys["pc_project_name"] = s_ProjectName;
 
         auto replace_result =
-            replace_directory_keys(fs::current_path() / s_ProjectName);
+            replace_directory_keys(fs::current_path() / s_ProjectName, s_Keys);
 
         if (!replace_result) {
             std::cerr << replace_result.error() << std::endl;

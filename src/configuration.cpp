@@ -7,8 +7,6 @@
 
 namespace pc {
 
-constexpr std::string APP_NAME = "blueplate";
-
 std::optional<fs::path> get_config_path() {
     fs::path config_path;
 
@@ -50,20 +48,24 @@ void write_file(const fs::path &path, const std::string &content) {
     file << content;
 }
 
-std::expected<void, std::string> create_sample_config(
-    const fs::path &config_path,
-    const fs::path &template_path
-) {
-    if (fs::exists(config_path)) {
+std::expected<void, std::string> create_sample_config() {
+    auto config_path = get_config_path();
+
+    if (!config_path) {
+        return std::unexpected("Failed to get config path");
+    }
+
+    if (fs::exists(*config_path)) {
         return std::unexpected(
-            "Config already exists: " + config_path.string()
+            "Config already exists: " + config_path->string()
         );
     }
 
     try {
+        const fs::path template_path = *config_path / "templates";
         const fs::path project_path = template_path / "sample-cmake-cpp";
 
-        fs::create_directory(config_path);
+        fs::create_directory(*config_path);
 
         toml::table config_table = toml::table{
             { "custom_variables",
@@ -74,7 +76,7 @@ std::expected<void, std::string> create_sample_config(
         std::ostringstream oss;
         oss << toml::default_formatter{ config_table };
 
-        write_file(config_path / CONFIG_FILE_NAME, oss.str());
+        write_file(*config_path / CONFIG_FILE_NAME, oss.str());
 
         fs::create_directory(template_path);
         fs::create_directory(project_path);
@@ -122,8 +124,8 @@ inline void example_function() {
         return {};
     } catch (const fs::filesystem_error &e) {
         try {
-            if (fs::exists(config_path)) {
-                fs::remove_all(config_path);
+            if (fs::exists(*config_path)) {
+                fs::remove_all(*config_path);
             }
         } catch (...) {}
         return std::unexpected(std::string("Filesystem error: ") + e.what());
