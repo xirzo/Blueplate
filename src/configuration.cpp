@@ -120,7 +120,8 @@ std::expected<void, std::string> create_sample_config() {
 
     try {
         const fs::path template_path = *config_path / "templates";
-        const fs::path project_path = template_path / "sample-cmake-cpp";
+        const fs::path cmake_project_path = template_path / "cmake-cpp";
+        const fs::path meson_project_path = template_path / "meson-cpp";
 
         fs::create_directory(*config_path);
 
@@ -139,13 +140,13 @@ std::expected<void, std::string> create_sample_config() {
         write_file(*config_path / CONFIG_FILE_NAME, oss.str());
 
         fs::create_directory(template_path);
-        fs::create_directory(project_path);
+        fs::create_directory(cmake_project_path);
 
-        fs::create_directory(project_path / "src");
-        fs::create_directory(project_path / "include");
+        fs::create_directory(cmake_project_path / "src");
+        fs::create_directory(cmake_project_path / "include");
 
         write_file(
-            project_path / "CMakeLists.txt",
+            cmake_project_path / "CMakeLists.txt",
             R"(cmake_minimum_required(VERSION ${pc_cmake_version})
 project(${pc_project_name} VERSION ${pc_version} LANGUAGES CXX)
 
@@ -160,7 +161,8 @@ add_executable(${PROJECT_NAME}
 )"
         );
 
-        write_file(project_path / "src" / "main.cpp", R"(#include <iostream>
+        write_file(
+            cmake_project_path / "src" / "main.cpp", R"(#include <iostream>
 #include "${pc_project_name}.h"
 
 // Author of this project is ${pc_author}
@@ -170,16 +172,88 @@ int main() {
     example_function();
     return 0;
 }
-)");
+)"
+        );
 
         write_file(
-            project_path / "include" / "${pc_project_name}.h", R"(#pragma once
+            cmake_project_path / "include" / "${pc_project_name}.h",
+            R"(#pragma once
 
 #include <iostream>
 
 inline void example_function() {
     std::cout << "This is an example function from ${pc_project_name}" << std::endl;
 }
+)"
+        );
+
+        fs::create_directory(meson_project_path);
+        fs::create_directory(meson_project_path / "src");
+        fs::create_directory(meson_project_path / "bin");
+
+        write_file(
+            meson_project_path / "bin" / "main.cpp",
+            R"(#include "${pc_project_name}.h"
+
+int main(void) {
+    ${pc_project_name}::print_hello_world();
+    return 0;
+}
+)"
+        );
+
+        write_file(
+            meson_project_path / "src" / "${pc_project_name}.cpp",
+            R"(#include <iostream>
+
+namespace ${pc_project_name} {
+
+void print_hello_world() {
+    std::cout << "Hello, World!" << std::endl;
+}
+
+}
+)"
+        );
+
+        write_file(
+            meson_project_path / "src" / "${pc_project_name}.h",
+            R"(#pragma once
+
+namespace ${pc_project_name} {
+
+void print_hello_world();
+
+}
+)"
+        );
+        write_file(
+            meson_project_path / "meson.build",
+            R"(project(
+  '${pc_project_name}',
+  'cpp',
+  version: '${pc_version}',
+  default_options: [
+    'default_library=static',
+    'cpp_std=c++20',
+    'warning_level=2',
+  ],
+)
+
+srcs = files(
+  'bin/main.cpp',
+  'src/${pc_project_name}.cpp',
+)
+
+executable(
+  '${pc_project_name}',
+  srcs,
+  include_directories: [
+    include_directories('src'),
+  ],
+  dependencies: [],
+  install: true,
+)
 )"
         );
 
