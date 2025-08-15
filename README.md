@@ -29,86 +29,111 @@ If you want to use **blueplate** in any directory you want, you may install it w
 ```bash
 meson install
 ```
+## Variables & Configuration Guide
 
-## Adding Templates
 
-Create a templates directory (choose the one that matches your OS):
+### What Are Template Variables?
 
-Platform | Path
--------- | ----
-Linux (XDG) | $XDG_CONFIG_HOME/blueplate/templates
-Linux (fallback) | $HOME/.config/blueplate/templates
-macOS | $HOME/Library/Application Support/blueplate/templates
-Windows | %APPDATA%\blueplate\templates
+Variables are placeholders you write inside your template files, file names, or directory names.  
+At project creation time they are replaced with concrete values.
 
-Each subdirectory of `CONFIG_DIRECTORY/templates` is a one separate template.
+Syntax:  
+```
+${variable_name}
+```
 
-Example (Linux):
+Example:
+```
+Project: ${pc_project_name}
+Author:  ${pc_author}
+```
+
+After running:
+```
+blueplate create my-awesome-app
+```
+It becomes:
+```
+Project: my-awesome-app
+Author: yourname 
+```
+
+
+Examples:
+
+| Template Form | Becomes |
+|---------------|---------|
+| `include/${pc_project_name}.h` | `include/my-awesome-app.h` |
+| `src/${pc_project_name}/main.cpp` | `src/my-awesome-app/main.cpp` |
+| Content line: `#include "${pc_project_name}.h"` | `#include "my-awesome-app.h"` |
+
+---
+
+### Built‑In Variables
+
+| Name | Meaning |
+|------|---------|
+| `pc_project_name` | The name you pass to `blueplate create <name>` |
+
+
+### Custom Variables
+
+Custom variables are defined inside the configuration file:
+```
+configuration.toml
+```
+located in your configuration directory:
+
+| Platform | Base Config Path |
+|----------|------------------|
+| Linux (XDG) | `$XDG_CONFIG_HOME/blueplate` |
+| Linux (fallback) | `$HOME/.config/blueplate` |
+| macOS | `$HOME/Library/Application Support/blueplate` |
+| Windows | `%APPDATA%\blueplate` |
+
+Inside that directory:  
+```
+configuration.toml
+templates/
+```
+
+Blueplate expects an array of 2‑element arrays under `[variables]` → `custom`:
+
+```toml
+[variables]
+custom = [
+    ["pc_version", "0.0.1"],
+    ["pc_author", "xirzo"],
+    ["pc_cmake_version", "3.24.1"]
+]
+```
+
+Each inner array = `[ "key", "value" ]`.
+
+These become usable variables:
+```
+${pc_version}
+${pc_author}
+${pc_cmake_version}
+```
+
+---
+### Getting a sample config
+
+Generate a starter configuration + sample template:
+
 ```bash
-mkdir -p ~/.config/blueplate/templates/basic-cpp/src
-cat > ~/.config/blueplate/templates/basic-cpp/src/main.cpp <<'EOF'
-#include <iostream>
-int main(){ std::cout << "Hello from basic-cpp!\\n"; }
-EOF
+blueplate config create
 ```
 
-Now run:
+This creates:
+```
+configuration.toml
+templates/sample-cmake-cpp/...
+```
+
+In order to easily remove your config use:
 
 ```bash
-./build/blueplate create test-app
-```
-
-## Template Variables
-
-Blueplate supports template variables in file contents and filenames. Variables use the `${variable_name}` syntax and are automatically replaced when creating a new project.
-
-- `${pc_project_name}` - The name of the project provided in the command line
-
-### Using Variables in Templates
-
-You can use variables in:
-
-1. **Files** - Any occurrence of `${variable_name}` will be replaced with its value
-2. **File names** - Files with names like `${pc_project_name}.h` will be renamed to match your project name
-3. **Directory names** - Directories with variables in their names will also be renamed
-
-### Example Template with Variables
-
-Here's an example of a CMake C++ template using variables:
-
-```
-sample-cmake-cpp/
-├── CMakeLists.txt         # Contains: project(${pc_project_name} VERSION 0.0.1)
-├── include/
-│   └── ${pc_project_name}.h  # Will be renamed to your project name
-└── src/
-    └── main.cpp           # Contains: #include "${pc_project_name}.h"
-```
-
-When you create a project with:
-```bash
-./build/blueplate create awesome-project
-```
-
-The result will be:
-```
-awesome-project/
-├── CMakeLists.txt         # Contains: project(awesome-project VERSION 0.0.1)
-├── include/
-│   └── awesome-project.h  # Renamed file
-└── src/
-    └── main.cpp           # Contains: #include "awesome-project.h"
-```
-
-
-## Creating a sample config
-
-Use these commands to manage your configuration:
-
-```bash
-# Create a sample configuration with templates
-./build/blueplate config create
-
-# Remove existing configuration
-./build/blueplate config remove
+blueplate config remove
 ```
